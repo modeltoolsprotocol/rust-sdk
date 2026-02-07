@@ -436,10 +436,24 @@ pub trait Describable: Parser {
     fn describable() -> Self {
         let args: Vec<String> = std::env::args().collect();
         if args.iter().any(|a| a == "--mtp-describe") {
-            let schema = describe::<Self>(None);
-            let json = serde_json::to_string_pretty(&schema).expect("failed to serialize schema");
-            println!("{}", json);
-            process::exit(0);
+            // If a subcommand is present in argv, don't intercept; let it handle things
+            let cmd = <Self as CommandFactory>::command();
+            let sub_names: std::collections::HashSet<String> = cmd
+                .get_subcommands()
+                .flat_map(|s| {
+                    let mut names = vec![s.get_name().to_string()];
+                    names.extend(s.get_all_aliases().map(String::from));
+                    names
+                })
+                .collect();
+            let has_subcommand = args.iter().skip(1).any(|a| sub_names.contains(a));
+            if !has_subcommand {
+                let schema = describe::<Self>(None);
+                let json =
+                    serde_json::to_string_pretty(&schema).expect("failed to serialize schema");
+                println!("{}", json);
+                process::exit(0);
+            }
         }
         <Self as Parser>::parse()
     }
@@ -551,13 +565,31 @@ impl DescribableBuilder {
 
     /// Check for `--mtp-describe` (printing schema + exiting if present),
     /// otherwise parse and return the CLI struct.
+    ///
+    /// If a subcommand name appears in argv alongside `--mtp-describe`,
+    /// the flag is NOT intercepted here; the subcommand is expected to
+    /// handle it (e.g. `wrap --mtp-describe` means "describe the wrapped
+    /// server", not "describe this CLI").
     pub fn parse<T: Parser>(self) -> T {
         let args: Vec<String> = std::env::args().collect();
         if args.iter().any(|a| a == "--mtp-describe") {
-            let schema = describe::<T>(Some(&self.options));
-            let json = serde_json::to_string_pretty(&schema).expect("failed to serialize schema");
-            println!("{}", json);
-            process::exit(0);
+            let cmd = <T as CommandFactory>::command();
+            let sub_names: std::collections::HashSet<String> = cmd
+                .get_subcommands()
+                .flat_map(|s| {
+                    let mut names = vec![s.get_name().to_string()];
+                    names.extend(s.get_all_aliases().map(String::from));
+                    names
+                })
+                .collect();
+            let has_subcommand = args.iter().skip(1).any(|a| sub_names.contains(a));
+            if !has_subcommand {
+                let schema = describe::<T>(Some(&self.options));
+                let json =
+                    serde_json::to_string_pretty(&schema).expect("failed to serialize schema");
+                println!("{}", json);
+                process::exit(0);
+            }
         }
         <T as Parser>::parse()
     }
