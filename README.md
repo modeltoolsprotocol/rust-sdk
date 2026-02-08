@@ -160,7 +160,7 @@ When a command accepts or produces JSON, describe the shape with a schema:
 
 ```rust
 let cli: Cli = DescribableBuilder::new()
-    .stdin_schema("process", "application/json", "Configuration to process",
+    .stdin_with_schema("process", "application/json", "Configuration to process",
         serde_json::json!({
             "type": "object",
             "properties": {
@@ -179,7 +179,7 @@ let cli: Cli = DescribableBuilder::new()
             "required": ["name"]
         })
     )
-    .stdout_schema("process", "application/json", None,
+    .stdout_with_schema("process", "application/json", "Processing results",
         serde_json::json!({
             "type": "object",
             "properties": {

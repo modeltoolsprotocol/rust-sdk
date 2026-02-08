@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 description = "Make any CLI tool LLM-discoverable with --mtp-describe"
 license = "Apache-2.0"
+repository = "https://github.com/modeltoolsprotocol/modeltoolsprotocol"
+readme = "README.md"
+keywords = ["cli", "mtp", "llm", "clap", "tool-discovery"]
+categories = ["command-line-interface", "development-tools"]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
