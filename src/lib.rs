@@ -450,7 +450,7 @@ pub trait Describable: Parser {
             if !has_subcommand {
                 let schema = describe::<Self>(None);
                 let json =
-                    serde_json::to_string_pretty(&schema).expect("failed to serialize schema");
+                    serde_json::to_string(&schema).expect("failed to serialize schema");
                 println!("{}", json);
                 process::exit(0);
             }
@@ -586,7 +586,7 @@ impl DescribableBuilder {
             if !has_subcommand {
                 let schema = describe::<T>(Some(&self.options));
                 let json =
-                    serde_json::to_string_pretty(&schema).expect("failed to serialize schema");
+                    serde_json::to_string(&schema).expect("failed to serialize schema");
                 println!("{}", json);
                 process::exit(0);
             }
